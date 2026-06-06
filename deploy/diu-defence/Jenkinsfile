@@ -27,14 +27,14 @@ pipeline {
 		
 	    }
 
-    post {
-        always {
-            echo 'Discord Notification.'
-            discordSend description: "$HARBOR_PROJECT-$SERVICE_NAME", scmWebUrl: 'https://github.com/rabo-87/school-management-system.git', showChangeset: true, 
-            footer: "message: *${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}", 
-            webhookURL: ''
-            }   
-        }
+    // post {
+    //     always {
+    //         echo 'Discord Notification.'
+    //         discordSend description: "$HARBOR_PROJECT-$SERVICE_NAME", scmWebUrl: 'https://github.com/rabo-87/school-management-system.git', showChangeset: true, 
+    //         footer: "message: *${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}", 
+    //         webhookURL: ''
+    //         }   
+    //     }
 
     stages {
 
