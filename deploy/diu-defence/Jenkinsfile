@@ -13,8 +13,8 @@ pipeline {
  
         HARBOR_PROJECT="diu-defence"
         SERVICE_NAME="school-management-system"  
-        REGISTRY="diu-defence.oss.net.bd"
-        dockerRegistryCredential='diu-defence.oss.net.bd'
+        REGISTRY="diu-registry.oss.net.bd"
+        dockerRegistryCredential='diu-registry.oss.net.bd'
         dockerImage = ''
         DOCKER_REGISTRY_URL="https://$REGISTRY"
  
