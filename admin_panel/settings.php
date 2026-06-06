@@ -1,4 +1,3 @@
-
 <?php include('partials/_header.php') ?>
 
 <div class="modal fade" id="edit-confirmation-modal" tabindex="-1" aria-labelledby="exampleModalLabel"

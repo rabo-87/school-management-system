@@ -1,0 +1,91 @@
+pipeline {
+    agent any
+    environment {
+
+        DEPLOYMENT_ENV="diu-defence"
+        IMAGE_CREATED_BY="jenkins"
+        DEPLOYMENT_ENV_VERSION="$NAMESPACE"        
+        NAMESPACE="diu-defence"
+
+         //Host specific configuration
+        HOST_VOLUME_LOCATION="$JENKINS_DATA_LOCATION"
+        M2_REPO="$JENKINS_DATA_LOCATION/.m2"
+ 
+        HARBOR_PROJECT="diu-defence"
+        SERVICE_NAME="school-management-system"  
+        REGISTRY="diu-defence.oss.net.bd"
+        dockerRegistryCredential='diu-defence.oss.net.bd'
+        dockerImage = ''
+        DOCKER_REGISTRY_URL="https://$REGISTRY"
+ 
+
+        PROJECT_LOCATION="$JENKINS_DATA_LOCATION/workspace/$JOB_NAME"
+        IMAGE_VERSION="$BUILD_NUMBER-$IMAGE_CREATED_BY-$DEPLOYMENT_ENV_VERSION"
+        IMAGE_REPOSITORY_NAME="$REGISTRY/$HARBOR_PROJECT/$SERVICE_NAME"        
+        DOCKER_TAG="$IMAGE_REPOSITORY_NAME:$IMAGE_VERSION"
+        DEPLOYMENT_DIRECTORY="./deploy"
+		
+	    }
+
+    post {
+        always {
+            echo 'Discord Notification.'
+            discordSend description: "$HARBOR_PROJECT-$SERVICE_NAME", scmWebUrl: 'https://github.com/rabo-87/school-management-system.git', showChangeset: true, 
+            footer: "message: *${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}", 
+            webhookURL: ''
+            }   
+        }
+
+    stages {
+
+     stage('Init') {
+            steps {
+                sh '''
+                COMMIT_ID=$(git log -1|head -1|awk -F ' ' ' {print $NF}')
+                echo "........result of commit .... $COMMIT_ID"
+                '''
+            }
+        }
+
+      
+     stage('Building Docker image') { 
+            steps { 
+                script { 
+                    dockerImage = docker.build("$DOCKER_TAG", "-f ./Dockerfile .")
+                }
+                sh '''
+                docker images|grep $SERVICE_NAME
+                '''
+            } 
+        }
+
+      stage('Push docker image') {
+            steps{
+                script {
+                    docker.withRegistry( "$DOCKER_REGISTRY_URL", dockerRegistryCredential ) {
+                        dockerImage.push()
+                        sh "docker images|grep $SERVICE_NAME"
+                    }
+                    
+                }
+            }
+        }
+     
+
+     stage('Deleted image After upload to Registry') {
+            steps {
+                echo "Cleaning local docker registry $DOCKER_TAG image"
+                sh 'docker rmi -f $DOCKER_TAG'
+            }
+        }
+     stage('Trigger ManifestUpdate') {
+            steps{
+                echo "triggering updatemanifestjob"
+                build job: 'school-mms-deploy', parameters: [
+                    string(name: 'DOCKER_TAG', value: env.DOCKER_TAG),
+                    ]
+            }
+        }
+    }
+}
+

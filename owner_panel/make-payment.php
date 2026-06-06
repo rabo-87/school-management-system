@@ -1,4 +1,3 @@
-
 <?php
 include("../assets/noSessionRedirect.php"); 
 include('./fetch-data/verfyRoleRedirect.php');

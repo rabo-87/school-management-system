@@ -1,4 +1,3 @@
-
 <?php
 $searches = array( 'dashboard','student',"attendence",'noticeboard','timetable',  'syllabus',  'notes', 'marks','leaves', 'settings');
 
